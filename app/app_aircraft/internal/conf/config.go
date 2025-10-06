@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
 )
 
@@ -19,6 +18,7 @@ type Configuration struct {
 
 func (config Configuration) New() (IConfiguration) {
     config.rt_viper = viper.New()
+    config.rt_viper.SetEnvPrefix("GOAPP")
     return config;
 }
 
@@ -38,22 +38,16 @@ func (config Configuration) LoadConfiguration(basePath string) (IConfiguration, 
 
 
 func (config Configuration) GetPgsqlConnectionString() (string, error) {
-
-	host := config.rt_viper.GetString("dbconnection.host")
-    port := config.rt_viper.GetInt("dbconnection.port")
-    user := config.rt_viper.GetString("dbconnection.username")
-    password := config.rt_viper.GetString("dbconnection.password")
-    dbname := config.rt_viper.GetString("dbconnection.database")
-    sslmode := config.rt_viper.GetString("dbconnection.sslmode") // "require" для продакшена
-
-    // Формирование строки подключения
-    pgsqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-        host, port, user, password, dbname, sslmode)
+    var dataconn = "dbconnection.data_connection"
+    config.rt_viper.BindEnv(dataconn)
+    pgsqlConn := config.rt_viper.GetString(dataconn)
 
     return pgsqlConn, nil
 }
 
 func (config Configuration) GetServerAddress() (string, error) {
+    var svraddr = "server.addr"
+    config.rt_viper.BindEnv(svraddr)
     svrAddress := config.rt_viper.GetString("server.addr")
     return svrAddress, nil
 }
