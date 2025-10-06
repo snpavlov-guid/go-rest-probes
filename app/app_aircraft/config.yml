@@ -1,0 +1,10 @@
+dbconnection:
+  host: "localhost"
+  port: 5432
+  username: "postgres"
+  password: "Postik123"
+  database: "AircraftDemo"
+  sslmode: "disable" 
+
+server:
+  addr: "localhost:9081"

@@ -1,0 +1,10 @@
+/.vscode/
+/.devenv/
+/.direnv/
+/.idea/
+/bin/
+/build/
+/var/
+/vendor/
+
+*.exe
