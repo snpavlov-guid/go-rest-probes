@@ -3,13 +3,21 @@ package service
 import (
     "testing"
 	"log"
+	"github.com/snpavlov/app_aircraft/internal/conf"
     "github.com/snpavlov/app_aircraft/internal/repo"
 )
 
 // TestGetAircrafts тестирует получение самолетов
 func TestService_GetAircrafts(t *testing.T) {
- 
-	service, err := AircraftService{}.NewAircraftService(nil)
+
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+	
+	service, err := AircraftService{}.NewAircraftService(config)
 
 	if err != nil {
 		t.Errorf("Ошибка инициализации сервиса 'AircraftService': %v", err)
@@ -36,7 +44,14 @@ func TestService_GetAircrafts(t *testing.T) {
 // TestGetAircrafts тестирует получение самолетов
 func TestService_GetAircraftByCodeTest(t *testing.T) {
  
-	service, err := AircraftService{}.NewAircraftService(nil)
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+	service, err := AircraftService{}.NewAircraftService(config)
 
 	if err != nil {
 		t.Errorf("Ошибка инициализации сервиса 'AircraftService': %v", err)

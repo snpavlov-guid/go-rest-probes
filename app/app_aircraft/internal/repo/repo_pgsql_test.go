@@ -7,25 +7,14 @@ import (
     "testing"
     _ "github.com/lib/pq"
     
-    "github.com/spf13/viper"
     "github.com/snpavlov/app_aircraft/internal/conf"
 )
-
-func CreateConfiguration() (conf.IConfiguration, error) {
-    // создать экземпляр конфигурации
-    config := conf.Configuration{ Rt_viper: viper.New()}; 
-
-    _, err := config.LoadConfiguration()
-
-     return config, err
-
-}
 
 // TestDBConnection тестирует успешное подключение к базе данных
 func TestDBConnection(t *testing.T) {
     
-    // создать экземпляр конфигурации
-    config, err := CreateConfiguration()
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
 
     if err != nil {
         t.Errorf("Не удалось загрузить конфигурацию: %v", err)
@@ -60,8 +49,8 @@ func TestDBConnection(t *testing.T) {
 // TestDBConnectionWithTimeout тестирует подключение с таймаутом
 func TestDBConnectionWithTimeout(t *testing.T) {
     
-    // создать экземпляр конфигурации
-    config, err := CreateConfiguration()
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
 
     if err != nil {
         t.Errorf("Не удалось загрузить конфигурацию: %v", err)
@@ -110,8 +99,8 @@ func TestDBConnectionInvalidCredentials(t *testing.T) {
 // TestGetAircrafts тестирует получение самолетов
 func TestGetAircrafts(t *testing.T) {
  
-    // создать экземпляр конфигурации
-    config, err := CreateConfiguration()
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
 
     if err != nil {
         t.Errorf("Не удалось загрузить конфигурацию: %v", err)
@@ -145,8 +134,8 @@ func TestGetAircrafts(t *testing.T) {
 // TestGetAircraft тестирует получение самолета по его коду
 func TestGetAircraftSuccess(t *testing.T) {
     
-    // создать экземпляр конфигурации
-    config, err := CreateConfiguration()
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
 
     if err != nil {
         t.Errorf("Не удалось загрузить конфигурацию: %v", err)
@@ -172,8 +161,8 @@ func TestGetAircraftSuccess(t *testing.T) {
 // TestGetAircraft тестирует получение самолета по его коду
 func TestGetAircraftFail(t *testing.T) {
  
-    // создать экземпляр конфигурации
-    config, err := CreateConfiguration()
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
 
     if err != nil {
         t.Errorf("Не удалось загрузить конфигурацию: %v", err)

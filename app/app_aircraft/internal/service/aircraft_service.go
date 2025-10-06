@@ -2,7 +2,6 @@ package service
 
 import (
 	"log"
-    "github.com/spf13/viper"
     "github.com/snpavlov/app_aircraft/internal/conf"
     "github.com/snpavlov/app_aircraft/internal/repo"
 )
@@ -31,20 +30,8 @@ type AircraftService struct {
     Repo repo.IAircraftRepo
 }
 
-func (service AircraftService) NewAircraftService(extconfig *conf.Configuration) (IAircraftService, error) {
-    // создать экземпляр конфигурации
-    config := conf.Configuration{ Rt_viper: viper.New()}; 
-
-    if extconfig != nil {
-        config = *extconfig
-    }
-
-	_, err := config.LoadConfiguration()
-	
-    if err != nil {
-        log.Fatalf("Не удалось загрузить конфигурацию: %v", err)
-    }
-
+func (service AircraftService) NewAircraftService(config conf.IConfiguration) (IAircraftService, error) {
+       
     // создать экземпляр репозитория
     service.Repo = repo.AircraftSqlRepo{Configuration: config};
 

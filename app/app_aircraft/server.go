@@ -20,7 +20,6 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/spf13/viper"
 	"github.com/gin-gonic/gin"
 
 	"github.com/snpavlov/app_aircraft/internal/conf"
@@ -61,12 +60,10 @@ func usage() {
 	os.Exit(2)
 }
 
-func (server AppServer) InitConfiguration() (config conf.Configuration) {
+func (server AppServer) InitConfiguration() (config conf.IConfiguration) {
     
-    // создать экземпляр конфигурации
-    config = conf.Configuration{ Rt_viper: viper.New()};
-
-	_, err := config.LoadConfiguration()
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("."); 
 
     if err != nil {
         log.Fatalf("Не удалось загрузить конфигурацию: %v", err)
@@ -98,7 +95,7 @@ func (server AppServer) Initialize() (AppServer) {
 	}
 
 	// Подготка функционального сервиса
-	service, err := service.AircraftService{}.NewAircraftService(&config)
+	service, err := service.AircraftService{}.NewAircraftService(config)
 
 	if err != nil {
 		log.Fatalf("Ошибка инициализации сервиса 'AircraftService': %v", err)

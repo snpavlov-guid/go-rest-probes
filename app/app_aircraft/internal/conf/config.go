@@ -5,56 +5,46 @@ import (
 	"github.com/spf13/viper"
 )
 
-// type Config struct {
-// 	dbconnection struct {
-// 		host string
-// 		port int
-// 		username string
-// 		password string
-// 		database string
-// 		sslmode string
-// 	}
-
-// 	server struct {
-// 		addr string
-// 	}
-// }
 
 // Определяем интерфейс репозитория IAircraftRepo
 type IConfiguration interface {
-	LoadConfiguration() (*viper.Viper, error)
+	LoadConfiguration(basePath string) (IConfiguration, error)
 	GetPgsqlConnectionString() (string, error)
 	GetServerAddress() (string, error)
 }
 
 type Configuration struct {
-	Rt_viper *viper.Viper
+	rt_viper *viper.Viper
 }
 
+func (config Configuration) New() (IConfiguration) {
+    config.rt_viper = viper.New()
+    return config;
+}
 
-func (config Configuration) LoadConfiguration() (*viper.Viper, error) {
+func (config Configuration) LoadConfiguration(basePath string) (IConfiguration, error) {
 
-    config.Rt_viper.SetConfigName("config") // Имя файла без расширения
-    config.Rt_viper.SetConfigType("yml")
-    config.Rt_viper.AddConfigPath(".")      // Поиск в корневой директории проекта
+    config.rt_viper.SetConfigName("config") // Имя файла без расширения
+    config.rt_viper.SetConfigType("yml")
+    config.rt_viper.AddConfigPath(basePath) // Директория конфигурации
 
-    err := config.Rt_viper.ReadInConfig()
+    err := config.rt_viper.ReadInConfig()
     if err != nil {
         return nil, err
     }
 
-    return config.Rt_viper, err
+    return config, err
 }
 
 
 func (config Configuration) GetPgsqlConnectionString() (string, error) {
 
-	host := config.Rt_viper.GetString("dbconnection.host")
-    port := config.Rt_viper.GetInt("dbconnection.port")
-    user := config.Rt_viper.GetString("dbconnection.username")
-    password := config.Rt_viper.GetString("dbconnection.password")
-    dbname := config.Rt_viper.GetString("dbconnection.database")
-    sslmode := config.Rt_viper.GetString("dbconnection.sslmode") // "require" для продакшена
+	host := config.rt_viper.GetString("dbconnection.host")
+    port := config.rt_viper.GetInt("dbconnection.port")
+    user := config.rt_viper.GetString("dbconnection.username")
+    password := config.rt_viper.GetString("dbconnection.password")
+    dbname := config.rt_viper.GetString("dbconnection.database")
+    sslmode := config.rt_viper.GetString("dbconnection.sslmode") // "require" для продакшена
 
     // Формирование строки подключения
     pgsqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
@@ -64,6 +54,6 @@ func (config Configuration) GetPgsqlConnectionString() (string, error) {
 }
 
 func (config Configuration) GetServerAddress() (string, error) {
-    svrAddress := config.Rt_viper.GetString("server.addr")
+    svrAddress := config.rt_viper.GetString("server.addr")
     return svrAddress, nil
 }
