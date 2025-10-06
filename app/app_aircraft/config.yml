@@ -2,4 +2,4 @@ dbconnection:
   data_connection: "host=localhost port=5432 user=postgres password=Postik123 dbname=AircraftDemo sslmode=disable"
 
 server:
-  addr: "localhost:9081"
+  addr: ":9081"

@@ -1,0 +1,15 @@
+services:
+  aircraft:
+    image: go_app_aircraft
+    container_name: app_aircraft
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile
+    environment:
+      GOAPP_ENVIRONMENT: Development
+      GOAPP_DBCONNECTION.DATA_CONNECTION: "host=host.docker.internal port=5432 user=postgres password=Postik123 dbname=AircraftDemo sslmode=disable"      
+      GIN_MODE: release
+    ports:
+      - "18081:9081"
+
