@@ -5,7 +5,18 @@ import (
 	"strings"
 	"github.com/snpavlov/app_aircraft/internal/model"
 )
-	
+
+func AddWhereClause(srcquery string, fields []string, startargpos int, keyword string, logic string) (string) {
+	i := startargpos
+	sfields := Map(fields, func(p string) string {
+		sfield := fmt.Sprintf("\"%s\" = $%v", p, i)
+		i++
+		return sfield
+    })
+	scondition := strings.Join(sfields, logic)
+	return fmt.Sprintf("%s %s (%s)) ", srcquery, keyword, scondition) 
+}
+
 func AddInClause(srcquery string, values []string, field string, keyword string) (string) {
 	svalues := Map(values, func(p string) string {
         return `'` + p + `'`

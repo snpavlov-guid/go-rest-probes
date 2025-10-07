@@ -170,7 +170,7 @@ func (repo AircraftSqlRepo) GetAircraftByCode(db *sql.DB, code string) (*Aircraf
 	return &aircraft, nil
 }
 
-// GetAircrafts возвращает самолеты с пагинацией
+// GetAircraftItems возвращает самолеты с пагинацией
 func (repo AircraftSqlRepo) GetAircraftItems(db *sql.DB, pager model.PageInfo) ([]model.AircraftData, int, error) {
 
     query := util.AddOrderByClause(queryAircrafts, []model.OrderInfo{{Field: "Code"}})
@@ -239,6 +239,66 @@ func (repo AircraftSqlRepo) GetAircraftItems(db *sql.DB, pager model.PageInfo) (
 	return aircraftItems, total.Total, nil
 }
 
+// GetAircraftItems возвращает самолеты с пагинацией
+func (repo AircraftSqlRepo) GetAircraftItemByCode(db *sql.DB, code string) (*model.AircraftData, error) {
+
+	query := util.AddWhereClause(queryAircrafts, []string{"aircraft_code"}, 1, "WHERE", "AND")
+
+	args := []any{code}
+    aircraft, err := executeRowQuery(db, query, args, 
+        func(row *sql.Row) (Aircraft, error) {
+            var item Aircraft
+			err := row.Scan(
+			    &item.Code,
+			    &item.NameRu,
+			    &item.NameEn,
+			    &item.Range,
+            )
+			return item, err
+		},
+    )
+
+    if err != nil {
+		return nil, fmt.Errorf("ошибка запроса Aircraft: %w", err)
+	}  	
+
+	if aircraft == nil {
+		return nil, nil
+	}
+
+
+    // Готовим запрос на места
+	query = util.AddInClause(querySeatTypes, []string{aircraft.Code}, "aircraft_code", "WHERE")
+    query = util.AddGroupClause(query, []string{"aircraft_code", "fare_conditions"})
+
+	var arg0 []any
+    seatTypes, err := executeRowsQuery(db, query, arg0, 
+        func(rows *sql.Rows) (SeatType, error) {
+            var item SeatType
+			err := rows.Scan(
+			    &item.Code,
+			    &item.SeatType,
+			    &item.SeatCount,               
+            )
+			return item, err
+		},
+    )
+
+    if err != nil {
+		return nil, fmt.Errorf("ошибка запроса SeatType: %w", err)
+	}
+
+	// Соединяем результаты основного запроса самолетов и данных их мест
+	aircraftItem := mapAircraftItem(*aircraft, seatTypes);
+
+	return &aircraftItem, nil
+}
+
+
+func mapAircraftItem(aircraft Aircraft, seatTypes []SeatType) (model.AircraftData) {
+	items := mapAircraftData([]Aircraft{aircraft}, seatTypes)
+	return items[0]
+}
 
 func mapAircraftData(aircrafts []Aircraft, seatTypes []SeatType) ([]model.AircraftData) {
 	

@@ -40,5 +40,5 @@ type IAircraftRepo interface {
 	GetAircrafts(db *sql.DB, pager PageInfo) ([]Aircraft, error)
 	GetAircraftByCode(db *sql.DB, code string) (*Aircraft, error)
 	GetAircraftItems(db *sql.DB, pager model.PageInfo) ([]model.AircraftData, int, error)
-
+	GetAircraftItemByCode(db *sql.DB, code string) (*model.AircraftData, error) 
 }
