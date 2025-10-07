@@ -177,14 +177,17 @@ func (repo AircraftSqlRepo) GetAircraftItems(db *sql.DB, pager model.PageInfo) (
 	query, args := util.AddPaginationClause(query, pager)
 
     aircrafts, err := executeRowsQuery(db, query, args, 
-        func(rows *sql.Rows, item Aircraft) error {
-            return rows.Scan(
+        func(rows *sql.Rows) (Aircraft, error) {
+            var item Aircraft
+			err := rows.Scan(
 			    &item.Code,
 			    &item.NameRu,
 			    &item.NameEn,
 			    &item.Range,
-            )},
-        )
+            )
+			return item, err
+		},
+    )
 
     if err != nil {
 		return nil, 0, fmt.Errorf("ошибка запроса Aircraft: %w", err)
@@ -196,17 +199,21 @@ func (repo AircraftSqlRepo) GetAircraftItems(db *sql.DB, pager model.PageInfo) (
 	})
 
     // Готовим запрос на места
-	query = util.AddInClause(querySeatTypes, codes, "st.aircraft_code", "WHERE")
+	query = util.AddInClause(querySeatTypes, codes, "aircraft_code", "WHERE")
     query = util.AddGroupClause(query, []string{"aircraft_code", "fare_conditions"})
 
-    seatTypes, err := executeRowsQuery(db, query, args, 
-        func(rows *sql.Rows, item SeatType) error {
-            return rows.Scan(
+	var arg0 []any
+    seatTypes, err := executeRowsQuery(db, query, arg0, 
+        func(rows *sql.Rows) (SeatType, error) {
+            var item SeatType
+			err := rows.Scan(
 			    &item.Code,
 			    &item.SeatType,
 			    &item.SeatCount,               
-            )},
-        )
+            )
+			return item, err
+		},
+    )
 
     if err != nil {
 		return nil, 0, fmt.Errorf("ошибка запроса SeatType: %w", err)
@@ -215,12 +222,15 @@ func (repo AircraftSqlRepo) GetAircraftItems(db *sql.DB, pager model.PageInfo) (
     // Соединяем результаты основного запроса самолетов и данных их мест
     aircraftItems := mapAircraftData(aircrafts, seatTypes)
 
-    total, err := executeRowQuery(db, queryTotal, args, 
-        func(row *sql.Row, item Total) error {
-            return row.Scan(
+    total, err := executeRowQuery(db, queryTotal, arg0, 
+        func(row *sql.Row) (Total, error) {
+            var item Total
+			err := row.Scan(
 			    &item.Total,
-            )},
-        )
+            )
+			return item, err
+		},
+    )
 
     if err != nil {
 		return nil, 0, fmt.Errorf("ошибка запроса Total: %w", err)

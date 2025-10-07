@@ -194,7 +194,8 @@ func TestGetAircraftFail(t *testing.T) {
 
 }
 
-func GetAircraftItems(t *testing.T) {
+// TestGetAircraftItems тестирует получение комплексного списка самолетов
+func TestGetAircraftItems(t *testing.T) {
 
     // создать экземпляр конфигурации и загрузить данные
     config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
