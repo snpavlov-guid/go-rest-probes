@@ -2,12 +2,15 @@ package repo
 
 import (
 	"context"
-    "database/sql"
-    "time"
-    "testing"
-    _ "github.com/lib/pq"
-    
-    "github.com/snpavlov/app_aircraft/internal/conf"
+	"database/sql"
+	"testing"
+	"time"
+
+	_ "github.com/lib/pq"
+
+	"github.com/snpavlov/app_aircraft/internal/conf"
+	"github.com/snpavlov/app_aircraft/internal/model"
+	"github.com/snpavlov/app_aircraft/internal/util"
 )
 
 // TestDBConnection тестирует успешное подключение к базе данных
@@ -189,4 +192,33 @@ func TestGetAircraftFail(t *testing.T) {
         t.Errorf("Ожидалась, что данные не будут получены при неверном коде '%v', но данные есть", codeBad)
     }
 
+}
+
+func GetAircraftItems(t *testing.T) {
+
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+   
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    pager := model.PageInfo{Limit: util.Ptr(5), Offset: util.Ptr(5)}
+
+    aircraftItems, total, err := repo.GetAircraftItems(db, pager)
+    if err != nil {
+		t.Errorf("Ошибка запроса данных 'GetAircrafts': %v", err)
+    }
+
+	t.Logf("Получено %v элементов из %v", len(aircraftItems), total)
+	
 }

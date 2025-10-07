@@ -5,3 +5,7 @@ type PageInfo struct {
     Offset *int `form:"offset"`
 }
 
+type OrderInfo struct {
+    Field  string
+    Desc bool
+}

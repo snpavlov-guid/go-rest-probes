@@ -16,6 +16,10 @@ type NameLang struct {
     NameEn string `json:"en"`
 }
 
+type Total struct {
+	Total  	 int 	 `db:"Total"`
+}
+
 type Aircraft struct {
 	Code     string  `db:"Code"`
 	NameRu   string  `db:"NameRu"`
@@ -23,7 +27,7 @@ type Aircraft struct {
 	Range  	 int 	 `db:"range"`
 }
 
-type SeatInfo struct {
+type SeatType struct {
 	Code      string  `db:"Code"`
 	SeatType  string  `db:"SeatType"`
 	SeatCount int     `db:"SeatCount"`
