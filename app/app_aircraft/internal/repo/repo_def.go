@@ -5,12 +5,6 @@ import (
 	"github.com/snpavlov/app_aircraft/internal/model"
 )
 
-
-type PageInfo struct {
-    Limit  *int `form:"size"`
-    Offset *int `form:"offset"`
-}
-
 // Названия типа JSONB
 type NameLang struct {
     NameRu string `json:"ru"`
@@ -37,8 +31,6 @@ type SeatType struct {
 // Определяем интерфейс репозитория IAircraftRepo
 type IAircraftRepo interface {
 	GetDBConnection() (*sql.DB, error)
-	GetAircrafts(db *sql.DB, pager PageInfo) ([]Aircraft, error)
-	GetAircraftByCode(db *sql.DB, code string) (*Aircraft, error)
 	GetAircraftItems(db *sql.DB, pager model.PageInfo) ([]model.AircraftData, int, error)
 	GetAircraftItemByCode(db *sql.DB, code string) (*model.AircraftData, error) 
 }

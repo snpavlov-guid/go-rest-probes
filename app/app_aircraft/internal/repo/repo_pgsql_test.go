@@ -99,101 +99,6 @@ func TestDBConnectionInvalidCredentials(t *testing.T) {
     }
 }
 
-// TestGetAircrafts тестирует получение самолетов
-func TestGetAircrafts(t *testing.T) {
- 
-    // создать экземпляр конфигурации и загрузить данные
-    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
-
-    if err != nil {
-        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
-    }
-
-    // создать экземпляр репозитория
-    repo := AircraftSqlRepo{Configuration: config};
-   
-    db, err := repo.GetDBConnection()
-    if err != nil {
-        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
-    }
-    defer db.Close()
-
-	limit := 10
-
-    pager := PageInfo{
-        Limit:  &limit,
-        Offset: nil, // Без смещения
-    }
-
-    withStruct, err := repo.GetAircrafts(db, pager)
-    if err != nil {
-		t.Errorf("Ошибка запроса данных 'GetAircrafts': %v", err)
-    } else 
-	{
-		t.Logf("Получено %v элементов", len(withStruct))
-	}
-}
-
-// TestGetAircraft тестирует получение самолета по его коду
-func TestGetAircraftSuccess(t *testing.T) {
-    
-    // создать экземпляр конфигурации и загрузить данные
-    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
-
-    if err != nil {
-        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
-    }
-
-    // создать экземпляр репозитория
-    repo := AircraftSqlRepo{Configuration: config};
-      
-    db, err := repo.GetDBConnection()
-    if err != nil {
-        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
-    }
-    defer db.Close()
-
-	codeOk := "SU9"
-
-    _, err = repo.GetAircraftByCode(db, codeOk)
-    if err != nil {
-		t.Errorf("Ошибка поиска самолета 'GetAircraft': %v", err)
-    } 
-}
-
-// TestGetAircraft тестирует получение самолета по его коду
-func TestGetAircraftFail(t *testing.T) {
- 
-    // создать экземпляр конфигурации и загрузить данные
-    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
-
-    if err != nil {
-        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
-    }
-
-    // создать экземпляр репозитория
-    repo := AircraftSqlRepo{Configuration: config};
-   
-    db, err := repo.GetDBConnection()
-    if err != nil {
-        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
-    }
-    defer db.Close()
-
-	codeBad := "AN1"
-
-    aircraft, err := repo.GetAircraftByCode(db, codeBad)
-
-	if err != nil {
-        t.Fatalf("Не удалось выполнить запрос данных: %v", err)
-    }
-
-    if aircraft != nil {
-        t.Errorf("Ожидалась, что данные не будут получены при неверном коде '%v', но данные есть", codeBad)
-    }
-
-}
-
 // TestGetAircraftItems тестирует получение комплексного списка самолетов
 func TestGetAircraftItems(t *testing.T) {
 
@@ -222,4 +127,35 @@ func TestGetAircraftItems(t *testing.T) {
 
 	t.Logf("Получено %v элементов из %v", len(aircraftItems), total)
 	
+}
+
+// TestGetAircraftItemByCode тестирует получение комплексного списка самолетов
+func TestGetAircraftItemByCode(t *testing.T) {
+   
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+      
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+	//codeOk := "SU9"
+    codeBad := "AN1"
+
+
+    _, err = repo.GetAircraftItemByCode(db, codeBad)
+    if err == nil {
+		t.Errorf("Ошибка поиска самолета 'GetAircraft': %v", err)
+    } 
+
+
 }

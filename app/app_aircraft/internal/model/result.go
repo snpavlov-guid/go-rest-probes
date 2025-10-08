@@ -21,6 +21,6 @@ type ServiceListResult[TD any] struct {
 	Message  string
 	Validations* []Validation
 	Code *string
-	Count int
+	Total int
 	Items *[]TD
 }

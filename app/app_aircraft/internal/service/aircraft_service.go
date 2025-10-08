@@ -4,26 +4,14 @@ import (
 	"log"
     "github.com/snpavlov/app_aircraft/internal/conf"
     "github.com/snpavlov/app_aircraft/internal/repo"
+	"github.com/snpavlov/app_aircraft/internal/model"
 )
 
-// Названия типа JSONB
-type Validation struct {
-    Property string
-    Message string
-}
-
-type ServiceDataResult[TD any] struct {
-	Result   bool
-	Message  string
-	Validations* []Validation
-	Code *string
-	Data *TD
-}
 
 // Определяем интерфейс репозитория IAircraftRepo
 type IAircraftService interface {
-	GetAircrafts(pager repo.PageInfo) (ServiceDataResult[[]repo.Aircraft], error)
-	GetAircraftByCode(code string) (ServiceDataResult[*repo.Aircraft], error)
+	GetAircrafts(pager model.PageInfo) (model.ServiceListResult[model.AircraftData], error)
+	GetAircraftByCode(code string) (model.ServiceDataResult[model.AircraftData], error)
 }
 
 type AircraftService struct {
@@ -38,7 +26,7 @@ func (service AircraftService) NewAircraftService(config conf.IConfiguration) (I
 	return service, nil
 }
 
-func (service AircraftService) GetAircrafts(pager repo.PageInfo) (ServiceDataResult[[]repo.Aircraft], error) {
+func (service AircraftService) GetAircrafts(pager model.PageInfo) (model.ServiceListResult[model.AircraftData], error) {
 
 	db, err := service.Repo.GetDBConnection()
     if err != nil {
@@ -46,17 +34,17 @@ func (service AircraftService) GetAircrafts(pager repo.PageInfo) (ServiceDataRes
     }
     defer db.Close()
 
-	data, err := service.Repo.GetAircrafts(db, pager)
+	data, total, err := service.Repo.GetAircraftItems(db, pager)
     if err != nil {
-		log.Fatalf("Ошибка запроса данных 'GetAircrafts': %v", err)
+		log.Fatalf("Ошибка запроса данных 'GetAircraftItems': %v", err)
     }
 
-	result := ServiceDataResult[[]repo.Aircraft] { Result: true, Data: &data }
+	result := model.ServiceListResult[model.AircraftData] { Result: true, Total: total, Items: &data }
 
 	return result, nil
 }
 
-func (service AircraftService) GetAircraftByCode(code string) (ServiceDataResult[*repo.Aircraft], error) {
+func (service AircraftService) GetAircraftByCode(code string) (model.ServiceDataResult[model.AircraftData], error) {
 
 	db, err := service.Repo.GetDBConnection()
     if err != nil {
@@ -64,12 +52,12 @@ func (service AircraftService) GetAircraftByCode(code string) (ServiceDataResult
     }
     defer db.Close()
 
-	data, err := service.Repo.GetAircraftByCode(db, code)
+	data, err := service.Repo.GetAircraftItemByCode(db, code)
     if err != nil {
 		log.Fatalf("Ошибка запроса данных 'GetAircrafts': %v", err)
     }
 
-	result := ServiceDataResult[*repo.Aircraft] { Result: true, Data: &data }
+	result := model.ServiceDataResult[model.AircraftData] { Result: true, Data: data }
 
 	return result, nil
 }

@@ -23,8 +23,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/snpavlov/app_aircraft/internal/conf"
-    "github.com/snpavlov/app_aircraft/internal/repo"
 	"github.com/snpavlov/app_aircraft/internal/service"
+	"github.com/snpavlov/app_aircraft/internal/model"
 )
 
 func main() {
@@ -135,17 +135,17 @@ func (server AppServer) version(ctx *gin.Context) {
 
 func (server AppServer) getAircafts(ctx *gin.Context) {
 
-	pager := repo.PageInfo{
+	pager := model.PageInfo{
         Limit:  nil,
         Offset: nil,
     }
 
 	err := ctx.ShouldBindQuery(&pager)
 	if err != nil {
-		argres := service.ServiceDataResult[[]repo.Aircraft]{
+		argres := model.ServiceListResult[model.AircraftData]{
 			Result: false, 
 			Message: "Ошибка чтения аргументов запроса",
-			Validations: &[]service.Validation{
+			Validations: &[]model.Validation{
 				{ Message: fmt.Sprintf("Ошибка: %v", err) },
 			},
 		}
@@ -157,10 +157,10 @@ func (server AppServer) getAircafts(ctx *gin.Context) {
 	result, err := server.aircraftService.GetAircrafts(pager)
 
 	if err != nil {
-		result = service.ServiceDataResult[[]repo.Aircraft]{
+		result = model.ServiceListResult[model.AircraftData]{
 			Result: false, 
 			Message: "Ошибка запроса данных",
-			Validations: &[]service.Validation{
+			Validations: &[]model.Validation{
 				{ Message: fmt.Sprintf("Ошибка: %v", err) },
 			},
 		}
@@ -176,7 +176,7 @@ func (server AppServer) getAircaftByCode(ctx *gin.Context) {
 	code := ctx.Param("code")
 
 	if len(code) == 0 {
-		argres := service.ServiceDataResult[*repo.Aircraft]{
+		argres := model.ServiceDataResult[model.AircraftData]{
 			Result: false, 
 			Message: "Ошибка получения шифра. Аргумент 'code' не задан",
 		}
@@ -188,10 +188,10 @@ func (server AppServer) getAircaftByCode(ctx *gin.Context) {
 	result, err := server.aircraftService.GetAircraftByCode(code)
 
 	if err != nil {
-		result = service.ServiceDataResult[*repo.Aircraft]{
+		result = model.ServiceDataResult[model.AircraftData]{
 			Result: false, 
 			Message: "Ошибка запроса данных",
-			Validations: &[]service.Validation{
+			Validations: &[]model.Validation{
 				{ Message: fmt.Sprintf("Ошибка: %v", err) },
 			},
 		}

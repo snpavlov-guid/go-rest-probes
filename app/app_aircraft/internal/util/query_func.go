@@ -14,7 +14,7 @@ func AddWhereClause(srcquery string, fields []string, startargpos int, keyword s
 		return sfield
     })
 	scondition := strings.Join(sfields, logic)
-	return fmt.Sprintf("%s %s (%s)) ", srcquery, keyword, scondition) 
+	return fmt.Sprintf("%s %s (%s) ", srcquery, keyword, scondition) 
 }
 
 func AddInClause(srcquery string, values []string, field string, keyword string) (string) {
