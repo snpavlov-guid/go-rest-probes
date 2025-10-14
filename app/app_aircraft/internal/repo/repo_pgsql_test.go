@@ -159,3 +159,85 @@ func TestGetAircraftItemByCode(t *testing.T) {
 
 
 }
+
+func TestUpdateAircraft(t *testing.T) {
+   // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+      
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    input := model.AircraftInput{ Code: "TUS", NameRu: "ТУ 134!", NameEn: "TU 1341", Range: 3531}
+
+    aircraft, err := repo.UpdateAircraft(db, input)
+    if err != nil {
+		t.Errorf("Ошибка обновления самолета 'UpdateAircraft': %v", err)
+    } 
+
+   t.Logf("Обновлен самолет с кодом '%v'", aircraft.Code)
+}
+
+func TestDeleteAircraft(t *testing.T) {
+   // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+      
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    input := "TUS";
+    
+    code, err := repo.DeleteAircraft(db, input)
+    if err != nil {
+		t.Errorf("Ошибка удаления самолета 'DeleteAircraft': %v", err)
+    } 
+
+   t.Logf("Удален самолет с кодом '%v'", code)
+}
+
+func TestCreateAircraft(t *testing.T) {
+   // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+      
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    input := model.AircraftInput{ Code: "TUS", NameRu: "ТУ 134", NameEn: "TU 134", Range: 2500}
+
+    aircraft, err := repo.CreateAircraft(db, input)
+    if err != nil {
+		t.Errorf("Ошибка создания самолета 'CreateAircraft': %v", err)
+    } 
+
+   t.Logf("Создан самолет с кодом '%v'", aircraft.Code)
+}
+

@@ -2,6 +2,7 @@ package repo
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -24,6 +25,16 @@ var (
         , count(*) as "SeatCount"
         from bookings.seats st`
 	queryTotal = `select count(*) as "Total" from bookings.aircrafts_data`
+
+	createAircraft = `insert into bookings.aircrafts_data ("aircraft_code", "model", "range") values ($1, $2, $3)`
+	updateAircraft = `update bookings.aircrafts_data set
+						"model" = "model"
+ 									|| jsonb_build_object('en', $2::varchar)
+ 									|| jsonb_build_object('ru', $3::varchar)
+ 						, "range" = $4
+ 						where "aircraft_code" = $1`
+	deleteAircraft = `delete from bookings.aircrafts_data where "aircraft_code" = $1`
+	
 )
 
 type AircraftSqlRepo struct {
@@ -179,6 +190,64 @@ func (repo AircraftSqlRepo) GetAircraftItemByCode(db *sql.DB, code string) (*mod
 	aircraftItem := mapAircraftItem(*aircraft, seatTypes);
 
 	return &aircraftItem, nil
+}
+
+func (repo AircraftSqlRepo) CreateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) {
+
+	query := createAircraft
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка подготовки запроса CreateAircraft: %w", err)
+	}
+	defer stmt.Close()
+
+	nameLabel := model.NameInput{En: input.NameEn, Ru: input.NameRu }
+    jmodel, err := json.Marshal(nameLabel)
+    if err != nil {
+       return nil, fmt.Errorf("ошибка подготовки json парамента для CreateAircraft: %w", err)
+    }
+
+	if _, err := stmt.Exec(input.Code, string(jmodel), input.Range); err != nil {
+		return nil, fmt.Errorf("ошибка выполнения запроса CreateAircraft: %w", err)
+	}
+
+	return repo.GetAircraftItemByCode(db, input.Code)
+
+}
+
+func (repo AircraftSqlRepo) UpdateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) {
+
+	query := updateAircraft
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка подготовки запроса UpdateAircraft: %w", err)
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(input.Code, input.NameEn, input.NameRu, input.Range); err != nil {
+		return nil, fmt.Errorf("ошибка выполнения запроса UpdateAircraft: %w", err)
+	}
+
+	return repo.GetAircraftItemByCode(db, input.Code)
+}
+
+func (repo AircraftSqlRepo) DeleteAircraft(db *sql.DB, code string) (*string, error) {
+
+	query := deleteAircraft
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка подготовки запроса DeleteAircraft: %w", err)
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(code); err != nil {
+		return nil, fmt.Errorf("ошибка выполнения запроса DeleteAircraft: %w", err)
+	}
+
+	return &code, nil
 }
 
 

@@ -33,4 +33,8 @@ type IAircraftRepo interface {
 	GetDBConnection() (*sql.DB, error)
 	GetAircraftItems(db *sql.DB, pager model.PageInfo) ([]model.AircraftData, int, error)
 	GetAircraftItemByCode(db *sql.DB, code string) (*model.AircraftData, error) 
+	CreateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) 
+	UpdateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) 
+	DeleteAircraft(db *sql.DB, code string) (*string, error) 
+
 }
