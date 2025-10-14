@@ -34,6 +34,8 @@ var (
  						, "range" = $4
  						where "aircraft_code" = $1`
 	deleteAircraft = `delete from bookings.aircrafts_data where "aircraft_code" = $1`
+
+	isExistsAircraft = `SELECT EXISTS (SELECT 1 FROM bookings.aircrafts_data WHERE "aircraft_code" = $1);`
 	
 )
 
@@ -191,6 +193,30 @@ func (repo AircraftSqlRepo) GetAircraftItemByCode(db *sql.DB, code string) (*mod
 
 	return &aircraftItem, nil
 }
+
+// GetAircraftItems возвращает самолеты с пагинацией
+func (repo AircraftSqlRepo) GetExistsByCode(db *sql.DB, code string) (bool, error) {
+
+	query := isExistsAircraft
+
+	args := []any{code}
+    exists, err := executeRowQuery(db, query, args, 
+        func(row *sql.Row) (bool, error) {
+			var exists bool
+			err := row.Scan(
+				&exists,
+            )
+			return exists, err
+		},
+    )
+
+    if err != nil {
+		return false, fmt.Errorf("ошибка запроса проверки Aircraft: %w", err)
+	}  	
+
+	return *exists, nil
+}
+
 
 func (repo AircraftSqlRepo) CreateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) {
 

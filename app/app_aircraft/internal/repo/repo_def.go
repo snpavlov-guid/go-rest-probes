@@ -15,6 +15,10 @@ type Total struct {
 	Total  	 int 	 `db:"Total"`
 }
 
+type Exists struct {
+	Exists  bool	 `db:"exists"`
+}
+
 type Aircraft struct {
 	Code     string  `db:"Code"`
 	NameRu   string  `db:"NameRu"`
@@ -32,9 +36,9 @@ type SeatType struct {
 type IAircraftRepo interface {
 	GetDBConnection() (*sql.DB, error)
 	GetAircraftItems(db *sql.DB, pager model.PageInfo) ([]model.AircraftData, int, error)
-	GetAircraftItemByCode(db *sql.DB, code string) (*model.AircraftData, error) 
+	GetAircraftItemByCode(db *sql.DB, code string) (*model.AircraftData, error)
+	GetExistsByCode(db *sql.DB, code string) (bool, error)
 	CreateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) 
 	UpdateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) 
 	DeleteAircraft(db *sql.DB, code string) (*string, error) 
-
 }

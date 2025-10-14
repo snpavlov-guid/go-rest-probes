@@ -160,6 +160,61 @@ func TestGetAircraftItemByCode(t *testing.T) {
 
 }
 
+func TestGetExistsByCodeSuccess(t *testing.T) {
+   // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+      
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    code := "100"
+
+    exists, err := repo.GetExistsByCode(db, code)
+    if err != nil {
+		t.Errorf("Ошибка запроса проверки существования самолета 'GetExistsByCode': %v", err)
+    } 
+
+   t.Logf("Самолет с кодом '%v': '%v'", code, exists)
+}
+
+
+func TestGetExistsByCodeFail(t *testing.T) {
+   // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+      
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    code := "AN1"
+
+    exists, err := repo.GetExistsByCode(db, code)
+    if err != nil {
+		t.Errorf("Ошибка запроса проверки существования самолета 'GetExistsByCode': %v", err)
+    } 
+
+   t.Logf("Самолет с кодом '%v': '%v'", code, exists)
+}
+
 func TestUpdateAircraft(t *testing.T) {
    // создать экземпляр конфигурации и загрузить данные
     config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
