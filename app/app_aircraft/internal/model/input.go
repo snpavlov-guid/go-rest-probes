@@ -7,15 +7,15 @@ type PageInfo struct {
 
 type OrderInfo struct {
     Field  string
-    Desc bool
+    Desc bool 
 }
 
 
 // Данные по классу мест
 type SeatInput struct {
-    Code     string  
-    SeatType string
-    SeatNumb string
+    Code     string  `json:"code"`
+    SeatType string  `json:"seatType"`
+    SeatNumb string  `json:"seatNumb"`
 
 }
 
@@ -27,8 +27,8 @@ type NameInput struct {
 
 // Общие данные о самолете
 type AircraftInput struct {
-	Code     string  
-	NameRu   string 
-	NameEn   string  
-	Range  	 int 	
+	Code     string  `json:"code"`
+	NameRu   string  `json:"nameRu"`
+	NameEn   string  `json:"nameEn"`
+	Range  	 int 	 `json:"range"`
 }

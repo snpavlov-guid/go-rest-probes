@@ -1,4 +1,4 @@
-// Copyright 2023 The Go Authors. All rights reserved.
+// Copyright 2025 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -38,10 +38,19 @@ func main() {
 	router.GET("/:text", server.greet)
 	router.GET("/version", server.version)
 
-	router.GET("/aircrafts", server.getAircafts)
-	router.GET("/aircrafts/:code", server.getAircaftByCode)
+	// Create a group for API version 1
+	v1 := router.Group("/api/v1") 
+	{
+		v1.GET("/aircrafts", server.getAircafts)
+		v1.GET("/aircrafts/:code", server.getAircaftByCode)
 
-	log.Printf("serving http://%s\n", *server.addr)
+		v1.POST("/aircrafts/create", server.createAircraft)
+		v1.POST("/aircrafts/update", server.updateAircraft)
+		v1.POST("/aircrafts/delete/:code", server.deleteAircraft)
+		v1.DELETE("/aircrafts/:code", server.deleteAircraft)
+	}
+
+	startinfo(*server.addr);
 
 	router.Run(*server.addr)
 
@@ -58,6 +67,14 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "usage: helloserver [options]\n")
 	flag.PrintDefaults()
 	os.Exit(2)
+}
+
+func startinfo(address string) {
+	parts := strings.Split(address, ":")
+	if (len(parts[0]) == 0) {
+		address = fmt.Sprintf("localhost:%s", parts[1])
+	}
+	log.Printf("serving http://%s\n", address)
 }
 
 func (server AppServer) InitConfiguration() (config conf.IConfiguration) {
@@ -202,5 +219,97 @@ func (server AppServer) getAircaftByCode(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, result)	
 }
 
+func (server AppServer) createAircraft(ctx *gin.Context) {
+	
+	var input model.AircraftInput
+
+	if err := ctx.BindJSON(&input); err != nil {
+		argres := model.ServiceDataResult[model.AircraftData]{
+			Result: false, 
+			Message: fmt.Sprintf("Ошибка получения данных: %v", err.Error()),
+		}
+		ctx.IndentedJSON(http.StatusBadRequest, argres)
+		return
+	}
+
+	// Call the data method
+	result, err := server.aircraftService.CreateAircraft(input)
+
+	if err != nil {
+		result = model.ServiceDataResult[model.AircraftData]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)	
+}
+
+func (server AppServer) updateAircraft(ctx *gin.Context) {
+	
+	var input model.AircraftInput
+
+	if err := ctx.BindJSON(&input); err != nil {
+		argres := model.ServiceDataResult[model.AircraftData]{
+			Result: false, 
+			Message: fmt.Sprintf("Ошибка получения данных: %v", err.Error()),
+		}
+		ctx.IndentedJSON(http.StatusBadRequest, argres)
+		return
+	}
+
+	// Call the data method
+	result, err := server.aircraftService.UpdateAircraft(input)
+
+	if err != nil {
+		result = model.ServiceDataResult[model.AircraftData]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)	
+}
+
+func (server AppServer) deleteAircraft(ctx *gin.Context) {
+	
+	code := ctx.Param("code")
+
+	if len(code) == 0 {
+		argres := model.ServiceDataResult[model.AircraftData]{
+			Result: false, 
+			Message: "Ошибка получения шифра. Аргумент 'code' не задан",
+		}
+		ctx.IndentedJSON(500, argres)
+		return
+	}	
+
+	// Call the data method
+	result, err := server.aircraftService.DeleteAircraft(code)
+
+	if err != nil {
+		result = model.ServiceDataResult[string]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)	
+}
 
 
