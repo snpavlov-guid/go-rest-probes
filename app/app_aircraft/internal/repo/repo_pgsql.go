@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/snpavlov/app_aircraft/internal/conf"
 	"github.com/snpavlov/app_aircraft/internal/model"
 	"github.com/snpavlov/app_aircraft/internal/util"
@@ -54,7 +54,7 @@ func (repo AircraftSqlRepo) GetDBConnection() (*sql.DB, error) {
 	}
 
 	// Открытие подключения (пула соединений)
-	db, err := sql.Open("postgres", pgsqlConn)
+	db, err := sql.Open("pgx", pgsqlConn)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при открытии базы данных: %w", err)
 	}

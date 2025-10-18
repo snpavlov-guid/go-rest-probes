@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/lib/pq"
+    _ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/snpavlov/app_aircraft/internal/conf"
 	"github.com/snpavlov/app_aircraft/internal/model"
