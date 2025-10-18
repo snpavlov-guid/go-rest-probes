@@ -4,7 +4,7 @@ import (
     "testing"
 	"log"
 	"github.com/snpavlov/app_aircraft/internal/conf"
-    "github.com/snpavlov/app_aircraft/internal/repo"
+	"github.com/snpavlov/app_aircraft/internal/model"
 )
 
 // TestGetAircrafts тестирует получение самолетов
@@ -25,7 +25,7 @@ func TestService_GetAircrafts(t *testing.T) {
 
 	limit := 10
 
-    pager := repo.PageInfo{
+    pager := model.PageInfo{
         Limit:  &limit,
         Offset: nil, // Без смещения
     }
@@ -36,7 +36,7 @@ func TestService_GetAircrafts(t *testing.T) {
 		t.Errorf("Ошибка запроса данных 'GetAircrafts': %v", err)
     } else 
 	{
-		log.Printf("Получено %v элементов", len(*result.Data))
+		log.Printf("Получено %v элементов", len(*result.Items))
 	}
 
 }
