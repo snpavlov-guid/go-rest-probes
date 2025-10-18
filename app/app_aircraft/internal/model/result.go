@@ -24,3 +24,15 @@ type ServiceListResult[TD any] struct {
 	Total int
 	Items *[]TD
 }
+
+// Результат для передачи даных через канал
+type ChannelItemResult[TD any] struct {
+	Item  *TD
+	Error error
+}
+
+// Результат для передачи даных через канал
+type ChannelListResult[TD any] struct {
+	Items *[]TD
+	Error error
+}

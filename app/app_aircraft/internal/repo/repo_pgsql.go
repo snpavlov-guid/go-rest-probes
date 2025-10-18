@@ -138,7 +138,87 @@ func (repo AircraftSqlRepo) GetAircraftItems(db *sql.DB, pager model.PageInfo) (
 	return aircraftItems, total.Total, nil
 }
 
-// GetAircraftItems возвращает самолеты с пагинацией
+// GetAircraftItems возвращает самолеты с пагинацией с использованием асинхронного подхода
+func (repo AircraftSqlRepo) GetAircraftItemsAsync(db *sql.DB, pager model.PageInfo) ([]model.AircraftData, int, error) {
+
+	// Запрос на получение общего количества самолетов
+	var arg0 []any
+    totalChan := executeRowQueryAsync(db, queryTotal, arg0, 
+        func(row *sql.Row) (Total, error) {
+            var item Total
+			err := row.Scan(
+			    &item.Total,
+            )
+			return item, err
+		},
+    )
+
+	// Запрос страницы самолетов
+    query := util.AddOrderByClause(queryAircrafts, []model.OrderInfo{{Field: "Code"}})
+	query, args := util.AddPaginationClause(query, pager)
+
+    aircraftsChan := executeRowsQueryAsync(db, query, args, 
+        func(rows *sql.Rows) (Aircraft, error) {
+            var item Aircraft
+			err := rows.Scan(
+			    &item.Code,
+			    &item.NameRu,
+			    &item.NameEn,
+			    &item.Range,
+            )
+			return item, err
+		},
+    )
+
+	aircraftsRes := <- aircraftsChan
+
+    if aircraftsRes.Error != nil {
+		return nil, 0, fmt.Errorf("ошибка запроса Aircraft: %w", aircraftsRes.Error)
+	}
+
+    // Собрать коды в массив
+	codes := util.Map(*aircraftsRes.Items, func(p Aircraft) string {
+		return p.Code
+	})
+
+    // Готовим запрос на места
+	query = util.AddInClause(querySeatTypes, codes, "aircraft_code", "WHERE")
+    query = util.AddGroupClause(query, []string{"aircraft_code", "fare_conditions"})
+	query = util.AddOrderByClause(query, []model.OrderInfo{{Field: "Code"}, {Field: "SeatType"}})
+
+    seatTypesChan := executeRowsQueryAsync(db, query, arg0, 
+        func(rows *sql.Rows) (SeatType, error) {
+            var item SeatType
+			err := rows.Scan(
+			    &item.Code,
+			    &item.SeatType,
+			    &item.SeatCount,               
+            )
+			return item, err
+		},
+    )
+
+	seatTypesRes := <- seatTypesChan
+
+    if seatTypesRes.Error != nil {
+		return nil, 0, fmt.Errorf("ошибка запроса SeatType: %w", seatTypesRes.Error)
+	}
+
+    // Соединяем результаты основного запроса самолетов и данных их мест
+    aircraftItems := mapAircraftData(*aircraftsRes.Items, *seatTypesRes.Items)
+
+    // Пулучаем данные запроса общего количества самолетов
+	totalRes := <- totalChan
+
+    if totalRes.Error != nil {
+		return nil, 0, fmt.Errorf("ошибка запроса Total: %w", totalRes.Error)
+	}  
+
+	return aircraftItems, totalRes.Item.Total, nil
+}
+
+
+// GetAircraftItemByCode возвращает самолет по коду
 func (repo AircraftSqlRepo) GetAircraftItemByCode(db *sql.DB, code string) (*model.AircraftData, error) {
 
 	query := util.AddWhereClause(queryAircrafts, []string{"aircraft_code"}, 1, "WHERE", "AND")
@@ -193,6 +273,66 @@ func (repo AircraftSqlRepo) GetAircraftItemByCode(db *sql.DB, code string) (*mod
 
 	return &aircraftItem, nil
 }
+
+// GetAircraftItemByCode возвращает самолет по коду
+func (repo AircraftSqlRepo) GetAircraftItemByCodeAsync(db *sql.DB, code string) (*model.AircraftData, error) {
+
+	query := util.AddWhereClause(queryAircrafts, []string{"aircraft_code"}, 1, "WHERE", "AND")
+
+	args := []any{code}
+    aircraftChan := executeRowQueryAsync(db, query, args, 
+        func(row *sql.Row) (Aircraft, error) {
+			var item Aircraft
+			err := row.Scan(
+			    &item.Code,
+			    &item.NameRu,
+			    &item.NameEn,
+			    &item.Range,
+            )
+			return item, err
+		},
+    )
+
+    // Готовим запрос на места
+	query = util.AddInClause(querySeatTypes, []string{code}, "aircraft_code", "WHERE")
+    query = util.AddGroupClause(query, []string{"aircraft_code", "fare_conditions"})
+	query = util.AddOrderByClause(query, []model.OrderInfo{{Field: "Code"}, {Field: "SeatType"}})
+
+	var arg0 []any
+    seatTypesChan := executeRowsQueryAsync(db, query, arg0, 
+        func(rows *sql.Rows) (SeatType, error) {
+            var item SeatType
+			err := rows.Scan(
+			    &item.Code,
+			    &item.SeatType,
+			    &item.SeatCount,               
+            )
+			return item, err
+		},
+    )
+
+	aircraftRes := <- aircraftChan
+	seatTypesRes := <- seatTypesChan;
+	
+    if aircraftRes.Error != nil {
+		return nil, fmt.Errorf("ошибка запроса Aircraft: %w", aircraftRes.Error)
+	}  	
+
+	if aircraftRes.Item == nil {
+		return nil, nil
+	}
+
+    if seatTypesRes.Error != nil {
+		return nil, fmt.Errorf("ошибка запроса SeatType: %w", seatTypesRes.Error)
+	}
+
+	// Соединяем результаты основного запроса самолетов и данных их мест
+	aircraftItem := mapAircraftItem(*aircraftRes.Item, *seatTypesRes.Items);
+
+	return &aircraftItem, nil
+}
+
+
 
 // GetAircraftItems возвращает самолеты с пагинацией
 func (repo AircraftSqlRepo) GetExistsByCode(db *sql.DB, code string) (bool, error) {

@@ -41,4 +41,7 @@ type IAircraftRepo interface {
 	CreateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) 
 	UpdateAircraft(db *sql.DB, input model.AircraftInput) (*model.AircraftData, error) 
 	DeleteAircraft(db *sql.DB, code string) (*string, error) 
+
+	GetAircraftItemsAsync(db *sql.DB, pager model.PageInfo) ([]model.AircraftData, int, error)
+	GetAircraftItemByCodeAsync(db *sql.DB, code string) (*model.AircraftData, error)
 }

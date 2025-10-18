@@ -39,7 +39,7 @@ func (service AircraftService) GetAircrafts(pager model.PageInfo) (model.Service
     }
     defer db.Close()
 
-	data, total, err := service.Repo.GetAircraftItems(db, pager)
+	data, total, err := service.Repo.GetAircraftItemsAsync(db, pager)
     if err != nil {
 		log.Fatalf("Ошибка запроса данных 'GetAircraftItems': %v", err)
         return model.ServiceListResult[model.AircraftData]{}, err
@@ -59,7 +59,7 @@ func (service AircraftService) GetAircraftByCode(code string) (model.ServiceData
     }
     defer db.Close()
 
-	data, err := service.Repo.GetAircraftItemByCode(db, code)
+	data, err := service.Repo.GetAircraftItemByCodeAsync(db, code)
     if err != nil {
 		log.Fatalf("Ошибка запроса данных 'GetAircrafts': %v", err)
         return model.ServiceDataResult[model.AircraftData]{}, err

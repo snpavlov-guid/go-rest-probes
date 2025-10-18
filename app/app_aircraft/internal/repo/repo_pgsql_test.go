@@ -129,6 +129,38 @@ func TestGetAircraftItems(t *testing.T) {
 	
 }
 
+
+func TestGetAircraftItemsAsync(t *testing.T) {
+
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+   
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    pager := model.PageInfo{Limit: util.Ptr(5), Offset: util.Ptr(5)}
+
+    aircraftItems, total, err := repo.GetAircraftItemsAsync(db, pager)
+    if err != nil {
+		t.Errorf("Ошибка запроса данных 'GetAircrafts': %v", err)
+    }
+
+	t.Logf("Получено %v элементов из %v", len(aircraftItems), total)
+	
+}
+
+
+
 // TestGetAircraftItemByCode тестирует получение комплексного списка самолетов
 func TestGetAircraftItemByCode(t *testing.T) {
    
@@ -157,8 +189,35 @@ func TestGetAircraftItemByCode(t *testing.T) {
 		t.Errorf("Ошибка поиска самолета 'GetAircraft': %v", err)
     } 
 
+}
+
+func TestGetAircraftItemByCodeAsync(t *testing.T) {
+   
+    // создать экземпляр конфигурации и загрузить данные
+    config, err := conf.Configuration{}.New().LoadConfiguration("./../.."); 
+
+    if err != nil {
+        t.Errorf("Не удалось загрузить конфигурацию: %v", err)
+    }
+
+    // создать экземпляр репозитория
+    repo := AircraftSqlRepo{Configuration: config};
+      
+    db, err := repo.GetDBConnection()
+    if err != nil {
+        t.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+    defer db.Close()
+
+    codeOk := "100"
+
+    _, err = repo.GetAircraftItemByCodeAsync(db, codeOk)
+    if err != nil {
+		t.Errorf("Ошибка поиска самолета 'GetAircraft': %v", err)
+    } 
 
 }
+
 
 func TestGetExistsByCodeSuccess(t *testing.T) {
    // создать экземпляр конфигурации и загрузить данные
@@ -295,4 +354,3 @@ func TestCreateAircraft(t *testing.T) {
 
    t.Logf("Создан самолет с кодом '%v'", aircraft.Code)
 }
-
