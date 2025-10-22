@@ -24,7 +24,8 @@ type Actor struct {
 // Показ
 type Showing struct {
 	Id 	    int64 	  `gorm:"primaryKey;autoIncrement"`
-	Play*   Play	  `gorm:"foreignkey:Id"`
+	PlayId  int64
+	Play    Play	  `gorm:"foreignkey:PlayId"`
 	Date    time.Time `gorm:"index:IDX_ShowingDate"`
 	Status  byte      `gorm:"index:IDX_ShowingStatus"`
 	Address string    `gorm:"size:1024;index:IDX_ShowingAddress"`
