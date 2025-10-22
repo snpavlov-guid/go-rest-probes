@@ -18,6 +18,19 @@ func Map[T, U any](ts []T, f func(T) U) []U {
     return us
 }
 
+// Универсальная функция Map для срезов
+func Map2[T, U any](ts []T, f func(T) (U, error)) ([]U, error) {
+    us := make([]U, len(ts))
+    for i := range ts {
+        itm, err := f(ts[i])
+        if (err != nil) {
+            return nil, err
+        }
+        us[i] = itm
+    }
+    return us, nil
+}
+
 func SliceToMap[T any, K comparable](slice []T, keyFunc func(T) K) map[K][]T {
     result := make(map[K][]T)
     for _, item := range slice {

@@ -32,3 +32,13 @@ type AircraftInput struct {
 	NameEn   string  `json:"nameEn"`
 	Range  	 int 	 `json:"range"`
 }
+
+// Общие данные аэропорта
+type AirportInput struct {
+	Code       string 
+	NameRu     string
+	NameEn     string
+	CityRu     string
+	CityEn     string	
+	Timezone   string
+}
