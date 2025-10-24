@@ -16,6 +16,19 @@ import(
 type GormDBContext struct {
 }
 
+func (dctx GormDBContext) Open(connection string, dbschema string) (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(connection), &gorm.Config{
+			NamingStrategy: schema.NamingStrategy{ 
+				TablePrefix: dbschema + ".",
+			},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("can't open database! Error: %v", err)
+	}
+
+	return db, nil
+}
+
 func (dctx GormDBContext) Migrate(connection string, dbschema string) error {
 	db, err := gorm.Open(postgres.Open(connection), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{ 
