@@ -9,6 +9,7 @@ import (
 type IConfiguration interface {
 	LoadConfiguration(basePath string) (IConfiguration, error)
 	GetPgsqlConnectionString() (string, error)
+    GetGormConnectionString() (string, error)
 	GetServerAddress() (string, error)
 }
 
@@ -39,6 +40,14 @@ func (config Configuration) LoadConfiguration(basePath string) (IConfiguration, 
 
 func (config Configuration) GetPgsqlConnectionString() (string, error) {
     var dataconn = "dbconnection.data_connection"
+    config.rt_viper.BindEnv(dataconn)
+    pgsqlConn := config.rt_viper.GetString(dataconn)
+
+    return pgsqlConn, nil
+}
+
+func (config Configuration) GetGormConnectionString() (string, error) {
+    var dataconn = "dbconnection.gorm_connection"
     config.rt_viper.BindEnv(dataconn)
     pgsqlConn := config.rt_viper.GetString(dataconn)
 
