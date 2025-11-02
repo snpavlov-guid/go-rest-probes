@@ -3,7 +3,7 @@ package service
 import (
 	"log"
 
-    // "github.com/snpavlov/app_aircraft/internal/conf"
+    "github.com/snpavlov/app_aircraft/internal/conf"
     "github.com/snpavlov/app_aircraft/internal/repo"
 	"github.com/snpavlov/app_aircraft/internal/model"
 )
@@ -13,13 +13,21 @@ import (
 type IAirportService interface {
 	GetAirports(pager model.PageInfo) (model.ServiceListResult[model.AirportData], error)
 	GetAirportByCode(code string) (model.ServiceDataResult[model.AirportData], error)
-   	CreateAirport(input model.AircraftInput) (model.ServiceDataResult[model.AirportData], error) 
-	UpdateAirport(input model.AircraftInput) (model.ServiceDataResult[model.AirportData], error) 
-	DeleteAirport(code string) (model.ServiceDataResult[string], error) 
+   	// CreateAirport(input model.AircraftInput) (model.ServiceDataResult[model.AirportData], error) 
+	// UpdateAirport(input model.AircraftInput) (model.ServiceDataResult[model.AirportData], error) 
+	// DeleteAirport(code string) (model.ServiceDataResult[string], error) 
 }
 
 type AirportService struct {
     Repo repo.IAirportRepo
+}
+
+func (service AirportService) NewAirportService(config conf.IConfiguration) (IAirportService, error) {
+       
+    // создать экземпляр репозитория
+    service.Repo = repo.GormDBContext{Configuration: config};
+
+	return service, nil
 }
 
 func (service AirportService) GetAirports(pager model.PageInfo) (model.ServiceListResult[model.AirportData], error) {

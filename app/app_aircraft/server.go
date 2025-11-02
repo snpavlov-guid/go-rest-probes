@@ -48,6 +48,9 @@ func main() {
 		v1.POST("/aircrafts/update", server.updateAircraft)
 		v1.POST("/aircrafts/delete/:code", server.deleteAircraft)
 		v1.DELETE("/aircrafts/:code", server.deleteAircraft)
+
+		v1.GET("/airports", server.getAirports)
+		v1.GET("/airports/:code", server.getAirportByCode)
 	}
 
 	startinfo(*server.addr);
@@ -61,6 +64,7 @@ type AppServer struct {
     greeting *string
 	addr *string
 	aircraftService service.IAircraftService
+	airportService service.IAirportService
 }
 
 func usage() {
@@ -111,15 +115,25 @@ func (server AppServer) Initialize() (AppServer) {
 		usage()
 	}
 
-	// Подготка функционального сервиса
-	service, err := service.AircraftService{}.NewAircraftService(config)
+	// Подготка функционального сервиса самолетов
+	aircraftService, err := service.AircraftService{}.NewAircraftService(config)
 
 	if err != nil {
 		log.Fatalf("Ошибка инициализации сервиса 'AircraftService': %v", err)
 		os.Exit(1)
 	}
 
-	server.aircraftService = service
+	server.aircraftService = aircraftService
+
+	// Подготка функционального сервиса аэропортов
+	airportService, err := service. AirportService{}.NewAirportService(config)
+
+	if err != nil {
+		log.Fatalf("Ошибка инициализации сервиса 'AirportService': %v", err)
+		os.Exit(1)
+	}
+
+	server.airportService = airportService	
 
 	return server
 
@@ -311,5 +325,76 @@ func (server AppServer) deleteAircraft(ctx *gin.Context) {
 
 	ctx.IndentedJSON(http.StatusOK, result)	
 }
+
+
+func (server AppServer) getAirports(ctx *gin.Context) {
+
+	pager := model.PageInfo{
+        Limit:  nil,
+        Offset: nil,
+    }
+
+	err := ctx.ShouldBindQuery(&pager)
+	if err != nil {
+		argres := model.ServiceListResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка чтения аргументов запроса",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, argres)
+		return
+	}
+
+	// Call the data method
+	result, err := server.airportService.GetAirports(pager)
+
+	if err != nil {
+		result = model.ServiceListResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)
+}
+
+func (server AppServer) getAirportByCode(ctx *gin.Context) {
+	
+	code := ctx.Param("code")
+
+	if len(code) == 0 {
+		argres := model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка получения шифра. Аргумент 'code' не задан",
+		}
+		ctx.IndentedJSON(500, argres)
+		return
+	}	
+
+	// Call the data method
+	result, err := server.airportService.GetAirportByCode(code)
+
+	if err != nil {
+		result = model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)	
+}
+
 
 

@@ -9,6 +9,23 @@ func Ptr[T any](v T) *T {
     return &v
 }
 
+func PrtOrNil[T, U any](v* T, f func(T) *U) *U {
+    if v == nil {
+        return  nil
+    }
+    return f(*v)
+}
+
+func Filter[T any](ts []T, f func(T) bool) []T {
+    var items []T
+    for _, item := range ts {
+        if f(item) {
+            items = append(items, item)
+        }
+    }
+    return items
+}
+
 // Универсальная функция Map для срезов
 func Map[T, U any](ts []T, f func(T) U) []U {
     us := make([]U, len(ts))

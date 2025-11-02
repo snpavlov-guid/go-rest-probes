@@ -51,6 +51,7 @@ type GFlight struct {
 	AirportArrivalCode string `gorm:"column:arrival_airport;not null"`
 	AirportDeparture* GAirport `gorm:"foreignkey:AirportDepartureCode"`
 	AirportArrival* GAirport `gorm:"foreignkey:AirportArrivalCode"`
+	Source* string `gorm:"column:source"`
 }
 
 // TableName specifies the table name for the User model

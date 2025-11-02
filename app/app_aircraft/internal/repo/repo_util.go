@@ -1,9 +1,11 @@
 package repo
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
+
 	"github.com/snpavlov/app_aircraft/internal/model"
+	"gorm.io/gorm"
 )
 
 func executeRowsQuery[T any](db *sql.DB, query string, args []interface{}, 
@@ -97,4 +99,39 @@ func executeRowQueryAsync[T any](db *sql.DB, query string, args []interface{},
     
     return resultChan
 }
+
+func executeGormListQueryAsync[T any](db *gorm.DB, 
+	queryFn func(gdb *gorm.DB) ([]T, error)) <-chan model.ChannelListResult[T] {
+	
+	resultChan := make(chan model.ChannelListResult[T], 1)
+
+	go func() {
+        defer close(resultChan)
+
+		items, err := queryFn(db);
+
+		resultChan <- model.ChannelListResult[T]{Items: &items, Error: err}
+
+	}()
+    
+    return resultChan
+}
+
+func executeGormItemQueryAsync[T any](db *gorm.DB, 
+	queryFn func(gdb *gorm.DB) (T, error)) <-chan model.ChannelItemResult[T] {
+	
+	resultChan := make(chan model.ChannelItemResult[T], 1)
+
+	go func() {
+        defer close(resultChan)
+
+		item, err := queryFn(db);
+
+		resultChan <- model.ChannelItemResult[T]{Item: &item, Error: err}
+
+	}()
+    
+    return resultChan
+}
+
 
