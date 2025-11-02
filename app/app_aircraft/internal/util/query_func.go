@@ -24,6 +24,13 @@ func AddInClause(srcquery string, values []string, field string, keyword string)
 	return fmt.Sprintf("%s %s (\"%s\" IN (%s)) ", srcquery, keyword, field, strings.Join(svalues, ",")) 
 }
 
+func GetInClauseItemsString(values []string) (string) {
+	svalues := Map(values, func(p string) string {
+        return `'` + p + `'`
+    })
+	return strings.Join(svalues, ",") 
+}
+
 func AddOrderByClause(srcquery string, fields []model.OrderInfo) (string) {
 	svalues := Map(fields, func(p model.OrderInfo) string {
 		clause := `"` + p.Field + `"`
