@@ -371,7 +371,7 @@ func (repo AircraftSqlRepo) CreateAircraft(db *sql.DB, input model.AircraftInput
 	nameLabel := model.NameInput{En: input.NameEn, Ru: input.NameRu }
     jmodel, err := json.Marshal(nameLabel)
     if err != nil {
-       return nil, fmt.Errorf("ошибка подготовки json парамента для CreateAircraft: %w", err)
+       return nil, fmt.Errorf("ошибка подготовки json параметра для CreateAircraft: %w", err)
     }
 
 	if _, err := stmt.Exec(input.Code, string(jmodel), input.Range); err != nil {

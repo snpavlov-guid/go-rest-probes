@@ -2,6 +2,7 @@ package domain
 
 import (
 	"github.com/jackc/pgx/pgtype"
+	"gorm.io/datatypes"
 ) 
 
 // Названия типа JSONB
@@ -24,10 +25,14 @@ func (GAircraft) TableName() string {
 
 type GAirport struct {
 	Code       string  `gorm:"primaryKey;column:airport_code;not null"`
-	JNames     pgtype.JSONB `gorm:"type:jsonb;default:'{}';column:airport_name;not null"`
-	JCityNames pgtype.JSONB `gorm:"type:jsonb;default:'{}';column:city;not null"`
+	JNames     datatypes.JSON `gorm:"type:jsonb;serializer:json;default:'{}';column:airport_name;not null"`
+	JCityNames datatypes.JSON `gorm:"type:jsonb;serializer:json;default:'{}';column:city;not null"`
 	Position   Point `gorm:"type:point;column:coordinates;not null"` 
 	Timezone   string `gorm:"column:timezone;not null"`
+}
+
+type GAirportWithFlights struct {
+	GAirport 
 
 	LastDepartureFlights *[]GFlight `gorm:"foreignKey:AirportDepartureCode"`
 	LastArrivalFlights *[]GFlight `gorm:"foreignKey:AirportArrivalCode"`

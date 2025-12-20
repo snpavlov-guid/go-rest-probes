@@ -43,3 +43,4 @@ func (p *Point) Scan(value interface{}) error {
 	p.Y = y
 	return nil
 }
+

@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"encoding/json"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"gorm.io/datatypes"
 
 	"github.com/jackc/pgx/pgtype"
 	"github.com/snpavlov/app_aircraft/internal/conf"
@@ -47,9 +49,9 @@ type IAirportRepo interface {
 	GetAitportItems(pager model.PageInfo) ([]model.AirportData, int, error)
 	GetAitportItemByCode(code string) (*model.AirportData, error)
 	GetAitportExistsByCode(code string) (bool, error)
-	// CreateAircraft(input model.AirportInput) (*model.AirportData, error) 
-	// UpdateAircraft(input model.AirportInput) (*model.AirportData, error) 
-	// DeleteAircraft(code string) (*string, error) 
+	CreateAirport(input model.AirportInput) (*model.AirportData, error) 
+	UpdateAirport(input model.AirportInput) (*model.AirportData, error) 
+	DeleteAirport(code string) (*string, error) 
 }
 
 func (dctx GormDBContext) Open(connection string, dbschema string) (*gorm.DB, error) {
@@ -263,6 +265,94 @@ func (dctx GormDBContext) GetAitportExistsByCode(code string) (bool, error) {
 
 }
 
+func (dctx GormDBContext) CreateAirport(input model.AirportInput) (*model.AirportData, error) {
+	err := dctx.Connect();
+    if err != nil {
+        return nil, err
+    }
+
+	airport := domain.GAirport{
+		Code: input.Code,
+		Position: domain.Point{X: 0, Y:0},
+		Timezone: input.Timezone,
+	}
+
+    jname, err := json.Marshal(model.NameInput{En: input.NameEn, Ru: input.NameRu })
+    if err != nil {
+       return nil, fmt.Errorf("ошибка подготовки json параметра для CreateAirport: %w", err)
+    }
+
+	jcity, err := json.Marshal(model.NameInput{En: input.CityEn, Ru: input.CityRu })
+    if err != nil {
+       return nil, fmt.Errorf("ошибка подготовки json параметра для CreateAirport: %w", err)
+    }
+
+	airport.JNames = datatypes.JSON([]byte(string(jname)))
+	airport.JCityNames = datatypes.JSON([]byte(string(jcity)))
+
+	// airport.JNames.Set(model.NameInput{En: input.NameEn, Ru: input.NameRu })
+	// airport.JCityNames.Set(model.NameInput{En: input.CityEn, Ru: input.CityRu })
+
+	result := dctx.GormDb.Create(&airport) 
+	if result.Error != nil {
+		return nil, fmt.Errorf("ошибка создания сущности Airport: %w", result.Error)
+	}
+
+	return dctx.GetAitportItemByCode(input.Code)
+}
+
+func (dctx GormDBContext) UpdateAirport(input model.AirportInput) (*model.AirportData, error) {
+	err := dctx.Connect();
+    if err != nil {
+        return nil, err
+    }
+
+	airport := domain.GAirport{
+		Code: input.Code,
+		Position: domain.Point{X: 0, Y:0},
+		Timezone: input.Timezone,
+	}
+
+	jname, err := json.Marshal(model.NameInput{En: input.NameEn, Ru: input.NameRu })
+    if err != nil {
+       return nil, fmt.Errorf("ошибка подготовки json параметра для UpdateAirport: %w", err)
+    }
+
+	jcity, err := json.Marshal(model.NameInput{En: input.CityEn, Ru: input.CityRu })
+    if err != nil {
+       return nil, fmt.Errorf("ошибка подготовки json параметра для UpdateAirport: %w", err)
+    }
+
+	airport.JNames = datatypes.JSON([]byte(string(jname)))
+	airport.JCityNames = datatypes.JSON([]byte(string(jcity)))
+
+	// airport.JNames.Set(model.NameInput{En: input.NameEn, Ru: input.NameRu })
+	// airport.JCityNames.Set(model.NameInput{En: input.CityEn, Ru: input.CityRu })
+
+	result := dctx.GormDb.Save(&airport) 
+	if result.Error != nil {
+		return nil, fmt.Errorf("ошибка обновления сущности Airport c кодом '%v': %w", input.Code, result.Error)
+	}
+
+	return dctx.GetAitportItemByCode(input.Code)
+}
+
+func (dctx GormDBContext) DeleteAirport(code string) (*string, error) {
+	err := dctx.Connect();
+    if err != nil {
+        return nil, err
+    }
+
+	// Delete with additional conditions
+    result := dctx.GormDb.Where("airport_code = ?", code).Delete(&domain.GAirport{})
+	if result.Error != nil {
+		return nil, fmt.Errorf("ошибка удаления сущности Airport c кодом '%v': %w", code, result.Error)
+	}	
+
+	return &code, nil
+}
+
+
 func mapAirportItem(airport domain.GAirport,
 				fldepartures []domain.GFlight, 
 				flarrivals []domain.GFlight) (model.AirportData, error) {
@@ -289,12 +379,12 @@ func mapAirportData(airports []domain.GAirport,
 		var aprtname domain.NameLang
 		var cityname domain.NameLang
 
-		err := p.JNames.AssignTo(&aprtname)
+		err := json.Unmarshal( p.JNames, &aprtname)
 		if err != nil {
 			return model.AirportData{}, fmt.Errorf("ошибка парсинга имен аэропорта: %w", err)
 		}
 
-		err = p.JCityNames.AssignTo(&cityname)
+		err = json.Unmarshal(p.JCityNames, &cityname)
 		if err != nil {
 			return model.AirportData{}, fmt.Errorf("ошибка парсинга имен города: %w", err)
 		}

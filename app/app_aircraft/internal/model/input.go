@@ -35,10 +35,10 @@ type AircraftInput struct {
 
 // Общие данные аэропорта
 type AirportInput struct {
-	Code       string 
-	NameRu     string
-	NameEn     string
-	CityRu     string
-	CityEn     string	
-	Timezone   string
+	Code       string  `json:"code"`
+	NameRu     string  `json:"nameRu"`
+	NameEn     string  `json:"nameEn"`
+	CityRu     string  `json:"cityRu"`
+	CityEn     string  `json:"cityEn"`
+	Timezone   string  `json:"timezone"`
 }

@@ -28,6 +28,94 @@ func HelperTest_GetAirportRepo() (IAirportRepo, error) {
      
 }
 
+func TestCreateAirport(t *testing.T) {
+
+	repo, err := HelperTest_GetAirportRepo() 
+	if err != nil {
+		t.Errorf("TestCreateAirport: не удалось получить репозиторий: %v", err)
+	}
+
+	input := model.AirportInput{
+		Code: "XXO",
+		NameRu: "Коньячинск Космо",
+		NameEn: "Cognachings Cosmo",
+		CityRu: "Коньячинск",
+		CityEn: "Cognachings",
+		Timezone: "Europe/Moscow",
+	}
+
+	airport, err := repo.CreateAirport(input)
+
+	if err != nil {
+		t.Errorf("Ошибка запроса создания сущности 'CreateAirport': %v", err)
+    }
+
+	t.Logf("Создана сущность аэропорта %v", airport.Code)
+
+}
+
+func TestUpdateAirport(t *testing.T) {
+
+	repo, err := HelperTest_GetAirportRepo() 
+	if err != nil {
+		t.Errorf("TestUpdateAirport: не удалось получить репозиторий: %v", err)
+	}
+
+	input := model.AirportInput{
+		Code: "XXO",
+		NameRu: "Коньячинск Космо - 01",
+		NameEn: "Cognachings Cosmo - 01",
+		CityRu: "Коньячинск - 01",
+		CityEn: "Cognachings - 01",
+		Timezone: "Europe/Moscow",
+	}
+
+	airport, err := repo.UpdateAirport(input)
+
+	if err != nil {
+		t.Errorf("Ошибка запроса обновления сущности 'UpdateAirport': %v", err)
+    }
+
+	t.Logf("Обновлена сущность аэропорта %v", airport.Code)
+
+}
+
+func TestDeleteAirport(t *testing.T) {
+	tests := []struct {
+		name   string
+		code   string
+		expected bool
+	}{
+		{"TestDeleteAirport_Success", "XXO", true},
+		{"TestDeleteAirport_Failed", "XXX", true},
+	}
+
+	repo, err := HelperTest_GetAirportRepo() 
+	if err != nil {
+		t.Errorf("TestDeleteAirport: не удалось получить репозиторий: %v", err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			
+			rescode, err := repo.DeleteAirport(tt.code)
+			if err != nil {
+				t.Errorf("Ошибка запроса удаления 'DeleteAirport': %v", err)
+			}
+
+			restest := *rescode == tt.code
+
+			t.Logf("Удаление элемента с кодом '%v'", tt.code)	
+
+			if restest != tt.expected {
+				t.Errorf("Ошибка в тесте %s", tt.name)
+			}
+		})
+	}
+	
+}
+
+
 // TestAirportsQuery
 func TestAirportsQuery(t *testing.T) {
 
