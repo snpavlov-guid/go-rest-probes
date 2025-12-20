@@ -51,6 +51,11 @@ func main() {
 
 		v1.GET("/airports", server.getAirports)
 		v1.GET("/airports/:code", server.getAirportByCode)
+
+		v1.POST("/airports/create", server.createAirport)
+		v1.POST("/airports/update", server.updateAirport)
+		v1.POST("/airports/delete/:code", server.deleteAirport)
+		v1.DELETE("/airports/:code", server.deleteAirport)
 	}
 
 	startinfo(*server.addr);
@@ -383,6 +388,100 @@ func (server AppServer) getAirportByCode(ctx *gin.Context) {
 
 	if err != nil {
 		result = model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)	
+}
+
+
+func (server AppServer) createAirport(ctx *gin.Context) {
+	
+	var input model.AirportInput
+
+	if err := ctx.BindJSON(&input); err != nil {
+		argres := model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: fmt.Sprintf("Ошибка получения данных: %v", err.Error()),
+		}
+		ctx.IndentedJSON(http.StatusBadRequest, argres)
+		return
+	}
+
+	// Call the data method
+	result, err := server.airportService.CreateAirport(input)
+
+	if err != nil {
+		result = model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)	
+}
+
+func (server AppServer) updateAirport(ctx *gin.Context) {
+	
+	var input model.AirportInput
+
+	if err := ctx.BindJSON(&input); err != nil {
+		argres := model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: fmt.Sprintf("Ошибка получения данных: %v", err.Error()),
+		}
+		ctx.IndentedJSON(http.StatusBadRequest, argres)
+		return
+	}
+
+	// Call the data method
+	result, err := server.airportService.UpdateAirport(input)
+
+	if err != nil {
+		result = model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка запроса данных",
+			Validations: &[]model.Validation{
+				{ Message: fmt.Sprintf("Ошибка: %v", err) },
+			},
+		}
+		ctx.IndentedJSON(500, result)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, result)	
+}
+
+func (server AppServer) deleteAirport(ctx *gin.Context) {
+	
+	code := ctx.Param("code")
+
+	if len(code) == 0 {
+		argres := model.ServiceDataResult[model.AirportData]{
+			Result: false, 
+			Message: "Ошибка получения шифра. Аргумент 'code' не задан",
+		}
+		ctx.IndentedJSON(500, argres)
+		return
+	}	
+
+	// Call the data method
+	result, err := server.airportService.DeleteAirport(code)
+
+	if err != nil {
+		result = model.ServiceDataResult[string]{
 			Result: false, 
 			Message: "Ошибка запроса данных",
 			Validations: &[]model.Validation{
