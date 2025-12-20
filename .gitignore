@@ -39,6 +39,7 @@ Thumbs.db
 bin/
 
 # Develop tools
+.vs/
 .vscode/
 .idea/
 .devenv/
