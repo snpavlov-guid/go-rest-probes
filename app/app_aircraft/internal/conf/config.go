@@ -11,6 +11,7 @@ type IConfiguration interface {
 	GetPgsqlConnectionString() (string, error)
     GetGormConnectionString() (string, error)
 	GetServerAddress() (string, error)
+    GetAuthorityAddress() (string, error)
 }
 
 type Configuration struct {
@@ -59,4 +60,11 @@ func (config Configuration) GetServerAddress() (string, error) {
     config.rt_viper.BindEnv(svraddr)
     svrAddress := config.rt_viper.GetString("server.addr")
     return svrAddress, nil
+}
+
+func (config Configuration) GetAuthorityAddress() (string, error) {
+    var svraddr = "auth.authority"
+    config.rt_viper.BindEnv(svraddr)
+    authAddress := config.rt_viper.GetString(svraddr)
+    return authAddress, nil
 }

@@ -10,6 +10,7 @@ services:
       GOAPP_ENVIRONMENT: Development
       GOAPP_DBCONNECTION.DATA_CONNECTION: "postgres://postgres:Postik123@host.docker.internal:5432/AircraftDemo"
       GOAPP_DBCONNECTION.GORM_CONNECTION: "host=host.docker.internal port=5432 user=postgres password=Postik123 dbname=AircraftDemo sslmode=disable"
+      GOAPP_AUTH.AUTHORITY: "http://host.docker.internal:8082/realms/probe-app"
       GIN_MODE: release
     ports:
       - "18081:9081"
