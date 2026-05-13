@@ -1,0 +1,8 @@
+**/*.exe/
+**/.vscode/
+**/.git/
+**/.gitignore
+**/README.md
+**/docker_compose/
+**/docker/
+

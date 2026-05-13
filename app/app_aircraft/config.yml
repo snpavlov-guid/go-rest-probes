@@ -2,6 +2,6 @@ dbconnection:
    data_connection: "postgres://postgres:Postik123@localhost:5432/AircraftDemo"
    gorm_connection: "host=localhost port=5432 user=postgres password=Postik123 dbname=AircraftDemo sslmode=disable"
 auth:
-   authority: "http://localhost:8082/realms/probe-app"
+   authority: "http://keycloak-dev:8082/realms/probe-app"
 server:
   addr: ":9081"

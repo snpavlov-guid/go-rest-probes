@@ -4,14 +4,16 @@ services:
     container_name: app_aircraft
     restart: unless-stopped
     build:
-      context: ./
-      dockerfile: ./docker/Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     environment:
       GOAPP_ENVIRONMENT: Development
       GOAPP_DBCONNECTION.DATA_CONNECTION: "postgres://postgres:Postik123@host.docker.internal:5432/AircraftDemo"
       GOAPP_DBCONNECTION.GORM_CONNECTION: "host=host.docker.internal port=5432 user=postgres password=Postik123 dbname=AircraftDemo sslmode=disable"
-      GOAPP_AUTH.AUTHORITY: "http://host.docker.internal:8082/realms/probe-app"
+      GOAPP_AUTH.AUTHORITY: "http://keycloak-dev:8082/realms/probe-app"
       GIN_MODE: release
+    extra_hosts:
+      - "keycloak-dev:host-gateway"      
     ports:
       - "18081:9081"
 
